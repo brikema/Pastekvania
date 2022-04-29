@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b75c95f34a00d4e8c04f76b73312e6, type: 3}
+  m_Name: Liana 1
+  m_EditorClassIdentifier: 
+  m_AnimatedSprites:
+  - {fileID: 343954762952645278, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: 7431214635261082004, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: 1123102468281470369, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: 2208437835488272059, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: -6914833941127546528, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: 2208437835488272059, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: 1123102468281470369, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  - {fileID: 7431214635261082004, guid: cc7500cc2630e1e4c90f7dc6569b1eaa, type: 3}
+  m_MinSpeed: 8
+  m_MaxSpeed: 8
+  m_AnimationStartTime: 0
+  m_AnimationStartFrame: 0
+  m_TileColliderType: 0
