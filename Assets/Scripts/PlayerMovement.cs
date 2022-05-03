@@ -15,11 +15,13 @@ public class PlayerMovement : MonoBehaviour
     // Déplacement normal
     private float horizontal;
     [SerializeField] private float speed;
-    [SerializeField] private float jumpingPower;
     private bool isFacingRight = true;
+    [SerializeField] private float jumpingPower;
+    private bool isJumping;
+    private bool jumpCooldown;
 
     // Jump Buffer
-    private float jumpBufferTime = 0.000000000000111f;
+    private float jumpBufferTime = 0.2f;
     private float jumpBufferCounter;
 
     // Coyote Time
@@ -37,20 +39,46 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(coyoteTimeCounter != 0){
-            // print(coyoteTimeCounter);
-        }
         if(isPlayerDead){
             return;
         }
-        rigidBody.velocity = new Vector2(horizontal * speed, rigidBody.velocity.y);
+
+        // Gestion CoyoteTime
+        if(IsGrounded()){
+            coyoteTimeCounter = coyoteTime;
+        } else {
+            coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        // Gestion Jump Buffer
+        if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f && !jumpCooldown)
+        {
+            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
+            jumpBufferCounter = 0f;
+
+            StartCoroutine(JumpCooldown());
+
+            if (!isJumping)
+            {
+                rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
+            }
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
         if(isFacingRight && horizontal < 0f){
             Flip();
         }
         else if(!isFacingRight && horizontal > 0f){
             Flip();
         }
+    }
 
+    private void FixedUpdate()
+    {
+        rigidBody.velocity = new Vector2(horizontal * speed, rigidBody.velocity.y);
     }
 
     private bool IsGrounded(){
@@ -69,33 +97,37 @@ public class PlayerMovement : MonoBehaviour
         horizontal = context.ReadValue<Vector2>().x;
     }
 
-    public void Jump(){
-
+    public void Jump(InputAction.CallbackContext context){
+        if(isPlayerDead){
+            return;
+        }
         // rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
         // context.performed
 
         // TODO : Faire en sorte que le saut n'augmente la vélocité que vers le haut
         // TODO : faire petit saut 
 
-        if(IsGrounded()) {
-            coyoteTimeCounter = coyoteTime;
-        } else {
-            coyoteTimeCounter = Time.deltaTime;
+        if (context.performed)
+        {
+            isJumping = true;
+            jumpBufferCounter = jumpBufferTime;
         }
 
-        if(coyoteTimeCounter > 0f && playerInput.events.player.["Jump"].WasPressedThisFrame()) {
-            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
-            coyoteTimeCounter = 0f;
+        if(context.canceled) {
+            isJumping = false;
+
+            if (rigidBody.velocity.y > 0f)
+            {
+                rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
+                coyoteTimeCounter = 0f;
+            }
         }
+    }
 
-        if(coyoteTimeCounter > 0f && playerInput.actions["Jump"].WasPressedThisFrame()) {
-            rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * .5f);
-            coyoteTimeCounter = 0f;
-        }
-
-        // if(IsGrounded() && context.performed) {
-        //     rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
-        // }
-
+    private IEnumerator JumpCooldown()
+    {
+        jumpCooldown = true;
+        yield return new WaitForSeconds(0.01f);
+        jumpCooldown = false;
     }
 }
