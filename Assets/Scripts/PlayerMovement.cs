@@ -5,15 +5,28 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-
+    // Player
     public Rigidbody2D rigidBody;
-    public Transform groundCheck;
-    public LayerMask groundLayer;
+    public BoxCollider2D boxCollider2D;
+    public PlayerInput playerInput;
 
+    public LayerMask platformLayer;
+
+    // Déplacement normal
     private float horizontal;
-    private float speed = 8f;
-    private float jumpingPower = 25f;
+    [SerializeField] private float speed;
+    [SerializeField] private float jumpingPower;
     private bool isFacingRight = true;
+
+    // Jump Buffer
+    private float jumpBufferTime = 0.000000000000111f;
+    private float jumpBufferCounter;
+
+    // Coyote Time
+    private float coyoteTime = 0.2f;
+    private float coyoteTimeCounter;
+
+    private bool isPlayerDead = false;
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +37,12 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(coyoteTimeCounter != 0){
+            // print(coyoteTimeCounter);
+        }
+        if(isPlayerDead){
+            return;
+        }
         rigidBody.velocity = new Vector2(horizontal * speed, rigidBody.velocity.y);
         if(isFacingRight && horizontal < 0f){
             Flip();
@@ -35,7 +54,8 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private bool IsGrounded(){
-        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+        RaycastHit2D raycastHit2D = Physics2D.BoxCast(boxCollider2D.bounds.center, boxCollider2D.bounds.size, 0f, Vector2.down, .1f, platformLayer);
+        return raycastHit2D.collider != null;
     }
 
     private void Flip(){
@@ -49,13 +69,33 @@ public class PlayerMovement : MonoBehaviour
         horizontal = context.ReadValue<Vector2>().x;
     }
 
-    public void Jump(InputAction.CallbackContext context){
-        if(context.performed && IsGrounded()){
-            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
+    public void Jump(){
+
+        // rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
+        // context.performed
+
+        // TODO : Faire en sorte que le saut n'augmente la vélocité que vers le haut
+        // TODO : faire petit saut 
+
+        if(IsGrounded()) {
+            coyoteTimeCounter = coyoteTime;
+        } else {
+            coyoteTimeCounter = Time.deltaTime;
         }
 
-        if(context.canceled && rigidBody.velocity.y > 0f){
-            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower * 0.5f);
+        if(coyoteTimeCounter > 0f && playerInput.events.player.["Jump"].WasPressedThisFrame()) {
+            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
+            coyoteTimeCounter = 0f;
         }
+
+        if(coyoteTimeCounter > 0f && playerInput.actions["Jump"].WasPressedThisFrame()) {
+            rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * .5f);
+            coyoteTimeCounter = 0f;
+        }
+
+        // if(IsGrounded() && context.performed) {
+        //     rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
+        // }
+
     }
 }
