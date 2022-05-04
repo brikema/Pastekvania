@@ -43,30 +43,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // Gestion CoyoteTime
-        if(IsGrounded()){
-            coyoteTimeCounter = coyoteTime;
-        } else {
-            coyoteTimeCounter -= Time.deltaTime;
-        }
-
-        // Gestion Jump Buffer
-        if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f && !jumpCooldown)
-        {
-            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
-            jumpBufferCounter = 0f;
-
-            StartCoroutine(JumpCooldown());
-
-            if (!isJumping)
-            {
-                rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
-            }
-        }
-        else
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
+        JumpUpdate();
 
         if(isFacingRight && horizontal < 0f){
             Flip();
@@ -98,29 +75,57 @@ public class PlayerMovement : MonoBehaviour
     }
 
     public void Jump(InputAction.CallbackContext context){
+
         if(isPlayerDead){
             return;
         }
-        // rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
-        // context.performed
 
-        // TODO : Faire en sorte que le saut n'augmente la vélocité que vers le haut
-        // TODO : faire petit saut 
-
+        // On appuie sur la touche de saut
         if (context.performed)
         {
             isJumping = true;
             jumpBufferCounter = jumpBufferTime;
         }
 
+        // On arrête d'appuyer
         if(context.canceled) {
             isJumping = false;
 
             if (rigidBody.velocity.y > 0f)
             {
+                // Petit Saut
                 rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
                 coyoteTimeCounter = 0f;
             }
+        }
+    }
+
+    public void JumpUpdate(){
+
+        // Gestion CoyoteTime
+        if(IsGrounded()){
+            coyoteTimeCounter = coyoteTime;
+        } else {
+            coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        // Saut
+        if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f && !jumpCooldown)
+        {
+            rigidBody.velocity = new Vector2(rigidBody.velocity.x, jumpingPower);
+            jumpBufferCounter = 0f;
+
+            StartCoroutine(JumpCooldown());
+
+            // Petit saut
+            if (!isJumping)
+            {
+                rigidBody.velocity = new Vector2(rigidBody.velocity.x, rigidBody.velocity.y * 0.5f);
+            }
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
         }
     }
 
